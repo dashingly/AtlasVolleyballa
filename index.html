@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Delivery and Publish Status</title>
+
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <!-- TODO: Update the Google Analytics script to report to the proper app
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'TODO', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+    -->
+    <style type="text/css">
+        #table-wrapper {
+        }
+        #table-scroll {
+          height:200px;
+          overflow:auto;
+
+        }
+        #table-wrapper table {
+          width:100%;
+        }
+        progress {
+          width: 600px;
+        }
+    </style>
+
+    <script>
+        // TODO: Import scripts
+
+        /*      GLOBAL variables        */
+        {
+            ACCOUNT_SETTINGS = null;
+            REQUEST_URL = null;
+            URL_REGISTRY = {};
+
+            MEDIA_FIELDS = "id,guid,title,ownerId,updated,:contentType,:schedulingPartners,:deliveryRequired,:approvedSchedule,:approvedMetadata"
+            MEDIA_FIELDS_NO_FILES = "aetn$,added,adPolicyId,adminTags,approved,authorLocalized,availabilityState,availabilityTags,availabilityWindows,availableDate,categories,category,categoryIds,chapters,copyright,copyrightLocalized,copyrightUrl,copyrightUrlLocalized,countries,credits,defaultThumbnailUrl,description,descriptionLocalized,excludeCountries,expirationDate,fileSourceMediaId,group,keywords,keywordsLocalized,link,linkLocalized,metrics,originalMediaIds,originalOwnerIds,pid,programId,provider,providerId,pubDate,publicUrl,ratings,restriction,restrictionId,seriesId,text,textLocalized,title,titleLocalized,valid,updated"
+            PROFILE_RESULT_FIELDS = "id,mediaId,profileId,status,statusInfo,added,updated,processError,validationErrors";
+
+            RESOLVE_DOMAIN_URL = "http://access.auth.theplatform.com/web/Registry/resolveDomain?schema=1.0";
+
+            WORKFLOW_DS_READ_ONLY_NAME  = "Workflow Data Service read-only";
+            PROFILE_RESULT_DS_ENDPOINT  = "/data/ProfileResult?schema=1.3.0&form=cjson&pretty=true";
+
+            PUBLISH_DS_READ_ONLY_NAME  = "Publish Data Service read-only";
+            PUBLISH_PROFILE_DS_ENDPOINT  = "/data/PublishProfile?schema=1.3.0&form=cjson&pretty=true";
+
+            MEDIA_DS_READ_ONLY_NAME = "Media Data Service read-only"
+            MEDIA_DS_NAME = "Media Data Service"
+            MEDIA_DS_READ_ONLY_URL = "https://read.data.media.theplatform.com/media/data/"
+            MEDIA_DS_ENDPOINT = "/data/Media?schema=1.10.0&searchSchema=1.0.0&form=cjson"
+        }
+
+        $(document).ready(function(){
+
+            var token = getUrlParameter("token");
+            var accountId = decodeURIComponent(getUrlParameter("account"));
+            var mediaIds = decodeURIComponent(getUrlParameter("mediaIds"));
+
+            ACCOUNT_SETTINGS = getAccountSettings(token,accountId);
+            var accountSettingsId = ACCOUNT_SETTINGS.id;
+
+            var devOrProd = ""
+            if(accountId.includes("2436927205")){
+                devOrProd += "DEV";
+            } else if(accountId.includes("2436927137")){
+                devOrProd += "PROD";
+                document.body.style.backgroundColor = "#ffcccc";
+            } else {
+                devOrProd += "UNKNOWN";
+                document.body.style.backgroundColor = "#ffffcc";
+            }
+            document.getElementById("devOrProd").innerHTML = devOrProd
+
+
+            var deliveryQueueMap = ACCOUNT_SETTINGS.aetn$deliveryQueueMap;
+            var deliveryQueueMapString = JSON.stringify(deliveryQueueMap)
+            console.log("DQ map:\t" + deliveryQueueMapString)
+
+            var profileResults = getProfileResultsData(mediaIds, accountId, token)
+            var profileResultsMap = profileResultsListToMap(profileResults)
+
+            var mediaList = getMediaData(mediaIds, accountId, token)
+
+            var media = mediaList[0];
+
+            // Set approval states
+            var deliveryRequired = media.aetn$deliveryRequired;
+            var approvedSchedule = media.aetn$approvedSchedule;
+            var approvedMetadata = media.aetn$approvedMetadata;
+            if(approvedSchedule){
+                document.getElementById("approvedSchedule").checked = true;
+                document.getElementById("progress").value = 33;
+            }
+            if(approvedMetadata){
+                document.getElementById("approvedMetadata").checked = true;
+                document.getElementById("progress").value = 66;
+            }
+            if(!deliveryRequired) {
+                document.getElementById("delivered").checked = true;
+                document.getElementById("progress").value = 100;
+            }
+
+            // Set lastUpdated
+            var options = { month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', timeZoneName: 'short' };
+            var updated = new Date(media.updated).toLocaleDateString("en-US", options)
+            document.getElementById("lastUpdated").innerHTML = updated;
+            checkPartnerPublishStatus(profileResultsMap, mediaList, deliveryQueueMap)
+
+            // PUBLISH STATUS SECTION
+            var profileNamesList = getNamesForProfiles(profileResults, token, accountId, mediaIds, profileResultsMap);
+
+            // Media fields view
+            getAndRenderMediaFields(token, accountId, media)
+
+            // Wire the search/filter
+            var input = document.getElementById('profileSearch');
+
+            input.addEventListener('keyup', function(ev) {
+                var results = document.getElementById("publishResultsTable").rows
+                var profiles = document.getElementById("publishProfilesTable").rows
+
+                var text = ev.target.value.replace("(","\\(").replace(")","\\)");
+                // Excaping special RegEx characters
+                var pat = new RegExp(text, 'i');
+                for (var i=0; i < results.length; i++) {
+                    var item = results[i];
+                    if (pat.test(item.innerText)) {
+                        item.style.display = "";
+                    } else {
+                        item.style.display = "none";
+                    }
+                }
+                for (var i=0; i < profiles.length; i++) {
+                    var item = profiles[i];
+                    if (pat.test(item.innerText)) {
+                        item.style.display = "";
+                    } else {
+                        item.style.display = "none";
+                    }
+                }
+            });
+
+            // Wire the search/filter
+            var input = document.getElementById('fieldFilter');
+
+            input.addEventListener('keyup', function(ev) {
+                var mediaFields = document.getElementById("mediaFieldsTable").rows
+
+                // Excaping special RegEx characters
+                var text = ev.target.value.replace("(","\\(").replace(")","\\)");
+                var pat = new RegExp(text, 'i');
+                for (var i=0; i < mediaFields.length; i++) {
+                    var item = mediaFields[i];
+                    if (pat.test(item.innerText)) {
+                        item.style.display = "";
+                    } else {
+                        item.style.display = "none";
+                    }
+                }
+            });
+        });
+    </script>
+</head>
+
+
+<body>
+    <div class="container">
+        <div class="container">
+            <div id="devOrProd"></div>
+            <progress id="progress" value="0" max="100"></progress>
+            <table>
+                <col width="200"><col width="200"><col width="200">
+                <tr>
+                    <td align="right">Schedule Approved <input id="approvedSchedule" type="checkbox" readonly></td>
+                    <td align="right">Metadata Approved <input id="approvedMetadata" type="checkbox" readonly></td>
+                    <td align="right">Delivered <input id="delivered" type="checkbox" readonly></td>
+                </tr>
+            </table>
+            <table align="right">
+                <col width="200"><col width="200">
+                <tbody>
+                    <tr>
+                        <td>Last Updated</td>
+                        <td><div id="lastUpdated"></div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+            <div id="table-wrapper">
+                <div id="table-scroll">
+                    <pre id="DQ">
+                        <table id="deliveryQueue" frame="box">
+                            <col width="200"><col width="45"><col width="300">
+                            <thead>
+                                <tr>
+                                    <th>Partner</th>
+                                    <th>State</th>
+                                    <th>Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </pre>
+                </div>
+            </div>
+
+
+        <div class="container">
+            <h5>Publish Results</h5>
+            Results and Profiles Filter: <input id="profileSearch" type="text"/>
+            <div id="table-wrapper">
+                <div id="table-scroll">
+                    <pre id="publishResults">
+                        <table id="publishResultsTable" border="1">
+                            <col width="500"><col width="45"><col width="300"><col width="200"><col width="200"><col width="200"><col width="200"><col width="200"><col width="500">
+                            <thead><tr><th>Profile Title</th><th>State</th><th>Partner</th><th>Profile ID</th><th>Status</th><th>Result ID</th><th>Added</th><th>Updated</th><th>Error</th></tr></thead>
+                            <tbody id="publishResultsTbody"></tbody>
+                        </table>
+                    </pre>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <h5>Publishing Profiles</h5>
+            <div id="table-wrapper">
+                <div id="table-scroll">
+                    <pre id="publishProfiles">
+                        <table id="publishProfilesTable" border="2">
+                            <col width="300"><col width="100"><col width="100"><col width="100">
+                            <tbody id="publishProfilesTbody">
+                            </tbody>
+                        </table>
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            Media fields Filter: <input id="fieldFilter" type="text"/>
+            <div id="table-wrapper">
+                <div id="table-scroll">
+                    <pre id="mediaFields"><table id="mediaFieldsTable" border="2"></table></pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
