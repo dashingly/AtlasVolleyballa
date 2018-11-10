@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-126685356-1"></script>
@@ -21,6 +22,28 @@
       gtag('js', new Date());
 
       gtag('config', 'UA-126685356-1');
+
+      $(document).ready(function(){
+        // Wire the search/filter
+        var input = document.getElementById('locationsFilter');
+
+        input.addEventListener('keyup', function(ev) {
+            var locationRows = document.getElementById("locations").rows
+
+            // Excaping special RegEx characters
+            var text = ev.target.value.replace("(","\\(").replace(")","\\)");
+            var pat = new RegExp(text, 'i');
+            for (var i=0; i < locationRows.length; i++) {
+                var item = locationRows[i];
+                if (pat.test(item.innerText)) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            }
+        });
+      });
+
     </script>
 
     <style type="text/css">
@@ -66,7 +89,7 @@ Volleyball is my religion. It is a religion that worships health, fun and nature
 
 In this blog I will aim to list and review different beach volleyball locations that I have visited and played on. The purpose is to make it easier for others to plan their vacations, to promote beach volleyball and perhaps to attract other to share information of the spots/destinations they liked or did not like. I will greatly appretiate it if you send any such information to my email AtlasVolleyballa at gmail.com</pre>
 
-            Filter: <input id="filterInput" type="text"/>
+            Filter: <input id="locationsFilter" type="text"/>
             <div id="table-wrapper">
                 <div id="table-scroll">
                     <pre id="pre-grouping">
