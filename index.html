@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <meta name="description" content="Free Web tutorials">
+    <meta name="keywords" content="volleyball,beach volleyball,beaches,travel,sports,fun,toronto,voleibol de playa,Beach-volley">
+    <meta name="author" content="Daniil Shevelev">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Atlas Volleyballa</title>
+
+    <link rel="icon" href="img/volleyball_icon.png">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-126685356-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-126685356-1');
+
+      $(document).ready(function(){
+        // Wire the search/filter
+        var input = document.getElementById('locationsFilter');
+
+        input.addEventListener('keyup', function(ev) {
+            var locationRows = document.getElementById("locations").rows
+
+            // Excaping special RegEx characters
+            var text = ev.target.value.replace("(","\\(").replace(")","\\)");
+            var pat = new RegExp(text, 'i');
+            for (var i=0; i < locationRows.length; i++) {
+                var item = locationRows[i];
+                if (pat.test(item.innerText)) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            }
+        });
+      });
+
+    </script>
+
+    <style type="text/css">
+
+        #table-wrapper {        }
+        /*
+        #table-scroll {
+          height:800px;
+          overflow:auto;
+        }
+        */
+        #table-wrapper table {
+          width:100%;
+          word-break: normal;
+        }
+        progress {
+          width: 600px;
+        }
+        pre {
+          white-space: pre-wrap;       /* Since CSS 2.1 */
+          white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+          white-space: -pre-wrap;      /* Opera 4-6 */
+          white-space: -o-pre-wrap;    /* Opera 7 */
+          word-wrap: break-word;       /* Internet Explorer 5.5+ */
+          font: normal 14px Verdana, Arial, sans-serif;
+        }
+        th, td {
+          padding: 7px;
+          text-align: left;
+          font: normal 14px Verdana, Arial, sans-serif;
+        }
+        .checked {
+            color: orange;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Best volleyball beaches around the world</h5>
+        <div class="container">
+          <pre>Whenever I am at home, and especially when I go on a vacation - I always want to play beach volleyball.
+<b>Volleyball is my religion.</b> It is a religion that worships health, fun and nature. The attributes of this religion are sand, sunshine, physical activity and people in swimwear. The duality and the paradox of this religion is to be able to push yourself past your limits, most notably when diving for the ball or when jousting at the net, while at the same time to have fun and truly enjoy life and the moment.
+
+On this page I will list and review different beach volleyball locations that I have visited and played on. The purpose is to make it easier for others to plan their vacations, to promote beach volleyball and perhaps to attract other to share information of the spots/destinations they liked or did not like. I will greatly appreciate it if you send any such information to my email AtlasVolleyballa at gmail.com</pre>
+
+            Filter: <input id="locationsFilter" type="text"/>
+            <div id="table-wrapper">
+                <div id="table-scroll">
+                    <pre id="pre-grouping">
+                        <table id="locations" border="0">
+                            <col width="100"><col width="150"><col width="200"><col width="500"><col width="200"><col width="200">
+                            <thead><tr><th>Country</th><th>Region</th><th>Location</th><th>Description</th><th>Photo</th><th>Quality</th></tr></thead>
+                            <tbody id="table-data">
+                              <tr><td>Canada</td><td>Toronto</td><td>Woodbine beach</td><td>100s of nets.<p><a href="https://www.toronto.ca/data/parks/prd/facilities/complex/311/index.html"/>Facilities</a> </td><td><img src="img/woodbine-2018.png" alt="" width="300" height="300"></td><td><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span></td></tr>
+                              <tr><td>Canada</td><td>Toronto</td><td>Sunnyside</td><td>2 nets.</td></tr>
+                              <tr><td>Canada</td><td>Toronto</td><td>Ontario place</td><td>1 net?</td></tr>
+                              <tr><td>Canada</td><td>Ontario</td><td>Wassaga beach</td><td>2 hours from Toronto.</td></tr>
+
+                              <tr><td>Cuba</td><td>Varadero</td><td>Los Cactus (4*)</td><td> 2 nets. One on the beach and the better one in front of the cafeteria, separated from the beach by trees. Good net, no wind. Animators play volleyball. Some good folks: Tony (Animator supervisor), Dino, Ramon and others. Very decent level of volleyball. If you have, bring your own lines. There are also nets on the beach in the nearby hotels.</td><td><img src="img/varadero-2018.jpg" alt="" width="400" height="300"><td><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star"></span></td></tr>
+                              <tr><td>Cuba</td><td>Varadero</td><td>Barlavento (3.5*)</td><td> there is net, it's ok but not great.</td></tr>
+                              <tr><td>Cuba</td><td>Cayo Santa Maria</td><td>Hotel Meliá Las Dunas</td><td>Net is behind a dune, but lots of sharp rocks.</td></tr>
+
+                              <tr><td>Cuba</td><td>Cayo Santa Maria</td><td>Hotel Melia Cayo Santa Maria next to Las Dunas</td><td>Better net and lifeguards play volleyball</td></tr>
+
+                              <tr><td>Nicaragua</td><td>San Juan del Sur (SJDS)</td><td>Beside Restaurante Vivian</td><td>Good net, bad field and very competitive level of play. The net is good and tight, but the field has (had in 2018) a lot of rocks on it, after tides and storms. Nicaraguan olimpic players often play here and thus the level of play is very good. The downside is that most of the people on the court do not speak English and the teens often take over the net for indefinite amount of time.</td><td><img src="img/sjds-2018.jpg" alt="" width="400" height="300"><td><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star checked"></span><span class="fa fa-star"></span></td></tr>
+
+                              <tr><td>Bahamas</td><td>Nassau</td><td>Hotel Riu Palace Paradise Island (4*)</td><td> has a net</td></tr>
+
+                              <tr><td>Dominican Republic</td><td>Punta Cana</td><td>Playa Los Corales</td><td>There are some nets, but they are not great and the level of play is "drunk/sunburned tourist".</td></tr>
+
+                              <tr><td>Dominican Republic</td><td>Playa Macao</td><td>no nets, but some surfing and freshly caught fish.</td></tr>
+                              <tr><td>Dominican Republic</td><td>Las Terrenas</td><td>One net on the very tip of the peninsula, hard surface.</td></tr>
+                              <tr><td>Dominican Republic</td><td>Cabarrette</td><td>No nets, only surfing sports</td></tr>
+
+                              <tr><td>Italy</td><td>Tirrenia near Pisa</td><td>Decent net, but mostly kids playing, near Grand Hotel Continental.</td></tr>
+                            </tbody>
+                        </table>
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        Links:
+        <ul style="list-style-type:disc">
+         <li><a href="https://www.instagram.com/atlasvolleyballa/"/>Instagram</a><br></li>
+         <li><a href=""/>YouTube Channel</a><br></li>
+         <li><a href=""/>YouTube "Beach Volleyball Toronto"</a><br></li>
+         <li><a href="https://bestaddictions.com"/>An affiliated travel blog</a></li>
+        </ul>
+
+
+    </div>
+</body>
+</html>
